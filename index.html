@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#041012">
+  <meta name="description" content="Lobster Lab — catch ingredients, dodge toxic sludge, and brew a legendary potion in this tiny browser arcade game.">
+  <title>Lobster Lab</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-icon" aria-hidden="true">🦞</span>
+        <span class="brand-name">Lobster <b>Lab</b></span>
+      </div>
+
+      <div class="hud" aria-label="Game status">
+        <div class="hud-item">
+          <span class="hud-label">Score</span>
+          <span class="hud-value" id="score">0</span>
+        </div>
+        <div class="hud-item hud-best">
+          <span class="hud-label">Best</span>
+          <span class="hud-value" id="best">0</span>
+        </div>
+        <div class="hud-item hud-level">
+          <span class="hud-label">Level</span>
+          <span class="hud-value" id="level">1</span>
+        </div>
+        <div class="hud-item">
+          <span class="hud-label">Beakers</span>
+          <span class="lives" id="lives" aria-label="3 beakers left">
+            <span class="life"></span>
+            <span class="life"></span>
+            <span class="life"></span>
+          </span>
+        </div>
+        <div class="brew" id="brewBar">
+          <div class="brew-top">
+            <span id="brewLabel">Brew</span>
+            <span class="combo" id="combo">×1</span>
+          </div>
+          <div class="brew-track" role="progressbar" aria-label="Brew meter" aria-valuemin="0" aria-valuemax="12" aria-valuenow="0" id="brewTrack">
+            <div class="brew-fill" id="brewFill"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="tool-btn" id="soundBtn" type="button" aria-pressed="false" aria-label="Mute sound">Sound: on</button>
+        <button class="tool-btn" id="pauseBtn" type="button" disabled>Pause</button>
+      </div>
+    </header>
+
+    <main class="stage" id="stage">
+      <canvas id="game" width="960" height="600" role="img"
+        aria-label="Lobster Lab playfield. Move the lobster left and right to catch ingredients in the flask and avoid toxic sludge."></canvas>
+
+      <div class="overlay" id="overlay">
+        <section class="screen" id="menuScreen">
+          <div class="screen-inner">
+            <p class="eyebrow">Specimen #001 · Crustacean Division</p>
+            <h1>Lobster <span>Lab</span></h1>
+            <p class="tagline">Catch the good stuff. Dodge the gunk. Brew a legendary potion.</p>
+
+            <div class="how">
+              <div class="how-row">
+                <span class="key">←</span><span class="key">→</span>
+                <span class="how-text">or move your mouse / finger to steer</span>
+              </div>
+              <div class="how-row">
+                <span class="dot dot-shrimp"></span><span class="how-text">Shrimp +10</span>
+                <span class="dot dot-kelp"></span><span class="how-text">Kelp +15</span>
+                <span class="dot dot-pearl"></span><span class="how-text">Pearl +50</span>
+              </div>
+              <div class="how-row">
+                <span class="dot dot-sludge"></span>
+                <span class="how-text">Toxic sludge costs a beaker. Fill the flask to trigger <b>Bubble Rush</b>!</span>
+              </div>
+            </div>
+
+            <button class="btn primary" id="startBtn" type="button">Start brewing</button>
+            <p class="hint"><span class="key">P</span> pause &nbsp;·&nbsp; <span class="key">M</span> mute &nbsp;·&nbsp; best score is saved locally</p>
+          </div>
+        </section>
+
+        <section class="screen is-hidden" id="pauseScreen">
+          <div class="screen-inner">
+            <p class="eyebrow">Experiment paused</p>
+            <h2>Lab on hold</h2>
+            <p class="tagline">Take a breath. The lobster will wait.</p>
+            <div class="button-row">
+              <button class="btn primary" id="resumeBtn" type="button">Resume</button>
+              <button class="btn ghost" id="pauseRestartBtn" type="button">Restart</button>
+            </div>
+            <p class="hint">Press <span class="key">P</span> or <span class="key">Esc</span> to jump back in</p>
+          </div>
+        </section>
+
+        <section class="screen is-hidden" id="overScreen">
+          <div class="screen-inner">
+            <p class="eyebrow">Experiment concluded</p>
+            <h2>Lab report</h2>
+            <div class="final-score" id="finalScore">0</div>
+            <p class="new-best is-hidden" id="newBest">★ New lab record ★</p>
+            <div class="stats">
+              <div class="stat"><span>Best</span><strong id="finalBest">0</strong></div>
+              <div class="stat"><span>Caught</span><strong id="finalCaught">0</strong></div>
+              <div class="stat"><span>Level</span><strong id="finalLevel">1</strong></div>
+            </div>
+            <div class="button-row">
+              <button class="btn primary" id="againBtn" type="button">Brew again</button>
+              <button class="btn ghost" id="menuBtn" type="button">Title screen</button>
+            </div>
+            <p class="hint">Tip: pearls are worth 50 and fill the flask twice as fast.</p>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <div class="touch-controls" aria-label="Touch controls">
+      <button class="touch-btn" id="leftBtn" type="button" aria-label="Move left">◀</button>
+      <button class="touch-btn" id="rightBtn" type="button" aria-label="Move right">▶</button>
+    </div>
+
+    <aside class="lab-notes" aria-label="Lab notes">
+      <div class="notes-row">
+        <span><i class="dot dot-shrimp"></i>Shrimp <b>+10</b></span>
+        <span><i class="dot dot-kelp"></i>Kelp <b>+15</b></span>
+        <span><i class="dot dot-pearl"></i>Pearl <b>+50</b></span>
+        <span><i class="dot dot-sludge"></i>Sludge <b>−1 beaker</b></span>
+      </div>
+      <p>Fill the flask to trigger <b>Bubble Rush</b> — double points and no sludge. Rotate your phone for a bigger lab.</p>
+    </aside>
+
+    <footer class="footer">
+      <span>Lobster Lab · a tiny experiment</span>
+      <span>No lobsters were harmed. Several were promoted.</span>
+    </footer>
+  </div>
+
+  <div class="visually-hidden" id="statusLive" role="status" aria-live="polite"></div>
+
+  <script src="game.js"></script>
+</body>
+</html>
